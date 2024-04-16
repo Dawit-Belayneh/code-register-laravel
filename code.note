@@ -1,0 +1,154 @@
+#this is controller to help controller sin up page
+
+ public function register(){
+        return view('auth.register');
+    }
+     
+    public function store(){
+    
+        $validated = request()->validate(
+            [
+                'name' => 'required|min:3|max:40',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|confirmed|min:8'
+            ]
+          
+            );
+ 
+
+
+        User::create(
+                [
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password']),
+                ]
+                );
+
+                return redirect()->route('dashboard')->with('flash' , 'account created successfully!');
+        
+    }
+
+
+    public function login(){
+        return view('auth.login');
+    }
+    public function authenticate(){ 
+   
+        $validated =request()->validate(
+            [
+                'email' => 'required|email',
+                'password' => 'required|min:8'
+            ]
+            );
+                
+               if (auth()->attempt($validated)){
+                request()->session()->regenerate();
+
+                return redirect()->route('dashboard')->with('flash' , 'logged in successfully!');
+
+               }
+
+                return redirect()->route('login')->withErrors([
+                    'email'=>"no matching user found"
+                ]);
+        
+    }
+
+    public function logout(){
+        auth()->logout();
+
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect()->route('dashboard')->with('flash'  , 'logged out successfully');
+    }
+
+
+#this html code register
+
+@extends('layout.layout')
+
+@section('content')
+<div class="row justify-content-center">
+            <div class="col-12 col-sm-8 col-md-6">
+                <form class="form mt-5" action="{{route('register')}}" method="POST">
+                    @csrf
+                  
+                    <h3 class="text-center text-dark">Register</h3>
+                    <div class="form-group">
+                        <label for="name" class="text-dark">Name:</label><br>
+                        <input type="text" name="name" id="name" class="form-control">
+                        @error('name')
+                        <span class="fs-6 text-darger">{{$message}}</span>
+                        @enderror
+                    <div class="form-group mt-3">
+                        <label for="email" class="text-dark">Email:</label><br>
+                        <input type="email" name="email" id="email" class="form-control">
+                        @error('email')
+                        <span class="fs-6 text-darger">{{$message}}</span>
+                        @enderror
+                  
+                        <label for="password" class="text-dark">Password:</label><br>
+                        <input type="password" name="password" id="password" class="form-control">
+                        @error('password')
+                        <span class="fs-6 text-darger">{{$message}}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="confirm-password" class="text-dark">Confirm Password:</label><br>
+                        <input type="password" name="password_confirmation" id="confirm-password" class="form-control">
+                        @error('password_confirmation')
+                        <span class="fs-6 text-darger">{{$message}}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="remember-me" class="text-dark"></label><br>
+                        <input type="submit" name="submit" class="btn btn-dark btn-md" value="submit">
+                    </div>
+                    <div class="text-right mt-2">
+                        <a href="/login" class="text-dark">Login here</a>
+                    </div>
+                </form>
+            </div>
+</div>
+
+@endsection
+
+
+#this is login page
+
+
+
+@extends('layout.layout')
+
+@section('content')
+<div class="row justify-content-center">
+            <div class="col-12 col-sm-8 col-md-6">
+                <form class="form mt-5" action="{{route('login')}}" method="POST">
+                    @csrf
+                    <h3 class="text-center text-dark">Login</h3>
+                    <div class="form-group mt-3">
+                        <label for="email" class="text-dark">Email:</label><br>
+                        <input type="email" name="email" id="email" class="form-control">
+                        @error('email')
+                        <span class="fs-6 text-darger">{{$message}}</span>
+                        @enderror
+                        <label for="password" class="text-dark">Password:</label><br>
+                        <input type="password" name="password" id="password" class="form-control">
+                        @error('password')
+                        <span class="fs-6 text-darger">{{$message}}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="remember-me" class="text-dark"></label><br>
+                        <input type="submit" name="submit" class="btn btn-dark btn-md" value="submit">
+                    </div>
+                    <div class="text-right mt-2">
+                        <a href="/register" class="text-dark">Register here</a>
+                    </div>
+                </form>
+            </div>
+</div>
+
+@endsection
